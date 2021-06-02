@@ -1,0 +1,62 @@
+def MapToProfile(fitsFile):  
+    import math as m
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    import numpy as np
+    from astropy.io import fits  
+    
+    img = fits.getdata(fitsFile)
+    h=fits.getheader(fitsFile)
+
+    plt.imshow(img)
+    plt.show()
+
+
+    # Image center brightest point 
+    arg_max = np.argmax(img)
+    center = np.unravel_index(arg_max, img.shape)
+    cen_x = center[0]
+    cen_y = center[1]
+    print(center)
+    # Get image parameters
+    a = img.shape[0]
+    b = img.shape[1]
+    # Find radial distances
+    [X, Y] = np.meshgrid(np.arange(b) - cen_x, np.arange(a) - cen_y)
+    R = np.sqrt(np.square(X) + np.square(Y))
+    rad = np.arange(1, np.max(R), 1)
+
+
+
+    #Calculating  tangent of each point with respect to center(brightest point)
+    T= np.arctan2(X, Y)
+    #cropping image between 
+    st_radi= int(input("Enter starting radius in degrees: "))
+    en_radi = int(input("Enter end radius in degrees: "))
+    F=np.greater(T, m.radians(st_radi)) & np.less(T,m.radians(en_radi))
+    print(F)
+    img2=F*img
+    plt.imshow(img2)
+
+
+    intensity = np.zeros(len(rad))
+    index = 0
+    bin_size = 1
+    for i in rad:
+        mask = np.greater(R, i - bin_size) & np.less(R, i + bin_size)
+        values = img2[mask]
+        r_values = np.delete(values.flatten(), np.where(img2[mask]==0))
+        intensity[index] = np.mean(r_values)
+        index += 1
+
+    plt.figure(figsize=(7,7))
+    # Plot data
+    import numpy as np
+    px = abs(h['CDELT1'])*3600
+    plt.scatter(rad*px, intensity, linewidth=1, marker="+")
+    # Edit axis labels
+    plt.xlabel('Radial Distance in arcsec')
+    plt.ylabel('Average density')
+    plt.grid()
+    #plt.xticks(np.arange(min(rad*2), max(rad*2)+1, 10))
+   
