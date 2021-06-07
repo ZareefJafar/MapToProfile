@@ -52,7 +52,7 @@ def MapToProfile(fitsFile):
     plt.figure(figsize=(7,7))
     # Plot data
     import numpy as np
-    px = abs(h['CDELT1'])*3600
+    px = 1/(abs(h['CDELT1'])*3600)
     plt.scatter(rad*px, intensity, linewidth=1, marker="+")
     # Edit axis labels
     plt.xlabel('Radial Distance in arcsec')
